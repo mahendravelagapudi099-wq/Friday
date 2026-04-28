@@ -54,16 +54,36 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- CHAT HISTORY ---
-    function addMessage(role, text) {
+    function addMessage(role, text, id = null) {
         const div = document.createElement("div");
         div.className = "chat-message " + role;
-        div.innerHTML = `<span class="chat-role">${role === "user" ? "YOU" : "JARVIS"}</span><span class="chat-text">${escapeHtml(text)}</span>`;
+        if (id) div.id = id;
+        
+        let roleLabel = role.toUpperCase();
+        if (role === "jarvis") roleLabel = "FRIDAY";
+        if (role === "user") roleLabel = "USER";
+        if (role === "brain") roleLabel = "BRAIN";
+
+        div.innerHTML = `<span class="chat-role">${roleLabel}</span><span class="chat-text">${escapeHtml(text)}</span><div class="message-insights"></div>`;
         chatHistory.appendChild(div);
         chatHistory.scrollTop = chatHistory.scrollHeight;
-        // limit history
+        
         while (chatHistory.children.length > 50) {
             chatHistory.removeChild(chatHistory.firstChild);
         }
+    }
+
+    function appendInsight(targetId, text, type) {
+        const parent = document.getElementById(targetId);
+        if (!parent) return;
+        const insightContainer = parent.querySelector('.message-insights');
+        if (!insightContainer) return;
+        
+        const insight = document.createElement("div");
+        insight.className = `insight-pill ${type}`;
+        insight.textContent = `[BRAIN] ${text}`;
+        insightContainer.appendChild(insight);
+        chatHistory.scrollTop = chatHistory.scrollHeight;
     }
 
     function escapeHtml(text) {
@@ -91,7 +111,9 @@ document.addEventListener('DOMContentLoaded', () => {
     async function handleUserInput(text) {
         if (isProcessing) return;
         isProcessing = true;
-        addMessage("user", text);
+        
+        const userMsgId = `user-${Date.now()}`;
+        addMessage("user", text, userMsgId);
         setStatus("PROCESSING");
 
         const visionKeywords = ["see", "look", "what", "camera", "optic", "vision", "around", "watching", "describe"];
@@ -116,13 +138,31 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const data = await resp.json();
             if (data.ok && data.response) {
-                addMessage("jarvis", data.response);
+                // Show Friday's response
+                const assistantMsgId = `msg-${Date.now()}`;
+                addMessage("jarvis", data.response, assistantMsgId);
+                
+                // Group insights with user message if they exist
+                if (data.user_insights && Array.isArray(data.user_insights)) {
+                    data.user_insights.forEach(insight => {
+                        appendInsight(userMsgId, insight.message, "user-thought");
+                    });
+                }
+
+                // Group insights with Friday's response
+                if (data.assistant_insights && Array.isArray(data.assistant_insights)) {
+                    data.assistant_insights.forEach(insight => {
+                        appendInsight(assistantMsgId, insight.message, "assistant-thought");
+                    });
+                }
+                
                 if (ttsEnabled) speak(data.response);
                 if (window.brainCore) window.brainCore.triggerPulse();
             } else {
                 addMessage("jarvis", "Neural processing error, sir. Please try again.");
             }
-        } catch {
+        } catch (e) {
+            console.error("Chat error:", e);
             addMessage("jarvis", "Connection lost to the brain server.");
         }
 

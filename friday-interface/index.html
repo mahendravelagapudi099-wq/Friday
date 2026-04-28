@@ -8,48 +8,58 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&display=swap" rel="stylesheet">
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
 </head>
 <body>
     <div id="experience"></div>
     <div class="scanlines"></div>
 
     <div class="ui-overlay">
-        <!-- Labels -->
-        <div class="label pink" style="top: 15%; left: 25%;">
+        <!-- Labels Anchored to Neural Regions -->
+        <div class="label pink" style="top: 15%; left: 8%;">
             <div class="label-title">PREFRONTAL</div>
-            <div class="label-stats">138 members . firing 8.98</div>
+            <div class="label-stats">NEURAL_INIT . 138 units . 8.98hz</div>
         </div>
-        <div class="label orange" style="top: 15%; right: 25%;">
+        <div class="label orange" style="top: 8%; left: 50%; transform: translateX(-50%);">
             <div class="label-title">MOTOR CORTEX</div>
-            <div class="label-stats">116 members . firing 8.32</div>
+            <div class="label-stats">ACTION_POTENTIAL . 116 units . 8.32hz</div>
         </div>
-        <div class="label purple" style="top: 55%; left: 15%;">
-            <div class="label-title">VISUAL PROCESSING</div>
-            <div class="label-stats">142 members . firing 8.12</div>
-        </div>
-        <div class="label cyan" style="top: 45%; right: 15%;">
+        <div class="label cyan" style="top: 15%; right: 8%;">
             <div class="label-title">SENSORY CORTEX</div>
-            <div class="label-stats">192 members . firing 8.65</div>
+            <div class="label-stats">DATA_INGEST . 192 units . 8.65hz</div>
         </div>
-        <div class="label green" style="top: 85%; left: 30%;">
+        <div class="label purple" style="bottom: 18%; left: 50%; transform: translateX(-50%);">
+            <div class="label-title">VISUAL PROCESSING</div>
+            <div class="label-stats">OPTIC_FLOW . 142 units . 8.12hz</div>
+        </div>
+        <div class="label green" style="bottom: 22%; left: 10%;">
             <div class="label-title">HIPPOCAMPUS</div>
-            <div class="label-stats">164 members . firing 8.48</div>
+            <div class="label-stats">MEMORY_INDEX . 164 units . 8.48hz</div>
         </div>
-        <div class="label red" style="top: 82%; right: 30%;">
+        <div class="label red" style="top: 45%; left: 5%;">
             <div class="label-title">AMYGDALA</div>
-            <div class="label-stats">147 members . firing 9.12</div>
+            <div class="label-stats">VALENCE_DETECTOR . 147 units . 9.12hz</div>
         </div>
-        <div class="label yellow" style="top: 70%; right: 40%;">
+        <div class="label yellow" style="bottom: 22%; right: 10%;">
             <div class="label-title">FEATURE LAYER</div>
-            <div class="label-stats">256 members . firing 8.48</div>
+            <div class="label-stats">RECOGNITION_POOL . 256 units . 8.48hz</div>
         </div>
-        <div class="label blue" style="top: 25%; left: 45%;">
+        <div class="label cyan" style="top: 35%; right: 5%;">
             <div class="label-title">FRIDAY NET</div>
-            <div class="label-stats">1024 members . firing 9.45</div>
+            <div class="label-stats">SYNAPTIC_OVERLAY . 1024 units . 9.45hz</div>
         </div>
-        <div class="label-primary" style="top: 48%; left: 50%; transform: translate(-50%, -50%);">
+
+        <!-- Primary Center Label -->
+        <div class="label-primary" style="bottom: 8%; left: 50%; transform: translateX(-50%);">
             <div class="label-title">CONCEPT SYNTHESIZATION</div>
-            <div class="label-stats">186 members . firing 9.26</div>
+            <div class="label-stats">CORE_INTEGRATION . 186 units . firing 9.26</div>
         </div>
 
         <!-- Control Panel (Bottom-Left) -->
@@ -73,16 +83,31 @@
             </div>
         </div>
 
-        <!-- Cinematic Subtitles (Paragraph Text Block) -->
-        <div class="chat-history" id="chat-history">
-            <div class="chat-message jarvis">
-                <span class="chat-role">NEURAL LINK</span>
-                <span class="chat-text">Connection established. Neural clusters at 100% capacity. Ready for protocol initiation, sir.</span>
+        <!-- Information Text Block (Bottom-Left) -->
+        <div class="info-block">
+            <div class="info-header">INFORMATION TEXT BLOCK</div>
+            <div class="system-explanation">
+                NEURAL_LINK_PROTOCOL: V1.3_FRIDAY<br>
+                ENCRYPTION: 256-BIT_QUALIA_SYNC<br>
+                CORE_LATENCY: 0.08ms // SYNC_STATUS: OPTIMAL<br>
+                INTERFACE: NEURAL_LINK_COMMAND_CONDUIT<br>
+                FRIDAY is an autonomous neural assistant that processes intent via real-time brain simulation, mapping linguistics to dynamic cognitive states.
             </div>
         </div>
+
+        <!-- Cinematic Subtitles (Chat History) -->
+        <div class="chat-container">
+            <div class="chat-history" id="chat-history">
+                <div class="chat-message jarvis">
+                    <span class="chat-role">NEURAL LINK</span>
+                    <span class="chat-text">Connection established. Neural clusters at 100% capacity. Ready for protocol initiation, sir.</span>
+                </div>
+            </div>
+        </div>
+
         <!-- Vision Overlay (Webcam) -->
         <div id="vision-container" class="vision-container hidden">
-            <video id="vision-feed" autoplay playsinline muted></video>
+            <video id="vision-video" autoplay playsinline muted></video>
             <div class="vision-overlay"></div>
             <div class="vision-corners"></div>
         </div>
@@ -93,14 +118,6 @@
         </div>
     </div>
 
-    <script type="importmap">
-        {
-            "imports": {
-                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
-            }
-        }
-    </script>
     <script type="module" src="js/main.js"></script>
     <script type="module" src="js/chat.js"></script>
 </body>

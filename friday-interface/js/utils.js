@@ -2,11 +2,19 @@
  * Utility functions for 3D math and neural distribution.
  */
 
-export const randomRange = (min, max) => Math.random() * (max - min) + min;
+// Simple seeded random to ensure deterministic layout
+let seed = 42;
+export const setSeed = (s) => { seed = s; };
+export const seededRandom = () => {
+    seed = (seed * 16807) % 2147483647;
+    return (seed - 1) / 2147483646;
+};
+
+export const randomRange = (min, max) => seededRandom() * (max - min) + min;
 
 export const getSpherePoint = (radius) => {
-    const u = Math.random();
-    const v = Math.random();
+    const u = seededRandom();
+    const v = seededRandom();
     const theta = 2 * Math.PI * u;
     const phi = Math.acos(2 * v - 1);
     const x = radius * Math.sin(phi) * Math.cos(theta);

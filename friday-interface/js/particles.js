@@ -21,22 +21,24 @@ export class ParticleSystem {
         const linePos = [];
         const lineColors = [];
         
-        // Define 9 Distinct Regions with unique colors
+        // Define 9 Distinct Regions with unique colors to match UI labels
         const regions = [
-            { color: 0x00ffff, center: new THREE.Vector3(15, 8, 4) },     // 0. Auditory/Language (Cyan)
-            { color: 0xff00ff, center: new THREE.Vector3(-15, 8, -4) },   // 1. Magenta
-            { color: 0xffff00, center: new THREE.Vector3(12, -10, -6) },  // 2. Yellow
-            { color: 0x00ff88, center: new THREE.Vector3(-12, -10, 6) },  // 3. Visual Cortex (Emerald)
-            { color: 0xff8800, center: new THREE.Vector3(0, 15, 10) },    // 4. Motor Cortex (Orange)
-            { color: 0x8800ff, center: new THREE.Vector3(0, -15, -10) },  // 5. Purple
-            { color: 0xff0044, center: new THREE.Vector3(-10, 0, 14) },   // 6. Crimson Red
-            { color: 0xccff00, center: new THREE.Vector3(10, 0, -14) },   // 7. Lime
-            { color: 0xff00aa, center: new THREE.Vector3(-16, -4, 0) }    // 8. Hot Pink
+            { color: 0x00d4ff, center: new THREE.Vector3(15, 8, 4) },     // 0. Auditory/Language (Cyan)
+            { color: 0xff2d6f, center: new THREE.Vector3(-15, 8, -4) },   // 1. Prefrontal (Pink)
+            { color: 0+ffd60a, center: new THREE.Vector3(12, -10, -6) },  // 2. Feature Layer (Yellow)
+            { color: 0x00c896, center: new THREE.Vector3(-12, -10, 6) },  // 3. Hippocampus (Green)
+            { color: 0xff9f1c, center: new THREE.Vector3(0, 15, 10) },    // 4. Motor Cortex (Orange)
+            { color: 0x9d4edd, center: new THREE.Vector3(0, -15, -10) },  // 5. Visual Processing (Purple)
+            { color: 0xff3b3b, center: new THREE.Vector3(-10, 0, 14) },   // 6. Amygdala (Red)
+            { color: 0xffd60a, center: new THREE.Vector3(10, 0, -14) },   // 7. Secondary Feature
+            { color: 0xff2d6f, center: new THREE.Vector3(-16, -4, 0) }    // 8. Lateral Prefrontal
         ];
 
-        this.nodesPerRegion = 70; // 630 total nodes
-        this.microPerRegion = 250; // 2250 total micro particles
-        this.excitations = new Array(9).fill(0); // Holds excitation multiplier per region
+        this.nodesPerRegion = 100;
+        this.microPerRegion = 400;
+        this.excitations = new Array(9).fill(0);
+        
+        const SAFE_ZONE_RADIUS = 12; // Core area must remain clear
 
         regions.forEach((reg) => {
             const c = new THREE.Color(reg.color);
@@ -45,12 +47,18 @@ export class ParticleSystem {
 
             // 1. Generate Primary Nodes for this region
             for (let i = 0; i < this.nodesPerRegion; i++) {
-                const offset = new THREE.Vector3(
-                    randomRange(-4, 4),
-                    randomRange(-4, 4),
-                    randomRange(-4, 4)
-                );
-                const pos = reg.center.clone().add(offset);
+                let pos;
+                let attempts = 0;
+                do {
+                    const offset = new THREE.Vector3(
+                        randomRange(-8, 8),
+                        randomRange(-8, 8),
+                        randomRange(-8, 8)
+                    );
+                    pos = reg.center.clone().add(offset);
+                    attempts++;
+                } while (pos.length() < SAFE_ZONE_RADIUS && attempts < 10);
+
                 nodePos.push(pos.x, pos.y, pos.z);
                 nodeColors.push(c.r, c.g, c.b);
                 regionNodes.push(pos);
@@ -58,39 +66,43 @@ export class ParticleSystem {
 
             // 2. Generate Sub-Particles (Micro) for this region
             for (let i = 0; i < this.microPerRegion; i++) {
-                const offset = new THREE.Vector3(
-                    randomRange(-7, 7),
-                    randomRange(-7, 7),
-                    randomRange(-7, 7)
-                );
-                const pos = reg.center.clone().add(offset);
+                let pos;
+                let attempts = 0;
+                do {
+                    const offset = new THREE.Vector3(
+                        randomRange(-12, 12),
+                        randomRange(-12, 12),
+                        randomRange(-12, 12)
+                    );
+                    pos = reg.center.clone().add(offset);
+                    attempts++;
+                } while (pos.length() < SAFE_ZONE_RADIUS && attempts < 10);
+
                 microPos.push(pos.x, pos.y, pos.z);
                 microColors.push(c.r, c.g, c.b);
                 regionMicros.push(pos);
             }
 
             // 3. Hierarchical Zigzag Sub-lines (Node -> Micro -> Micro)
-            // Connect primary nodes to their surrounding sub-particles
             for (let i = 0; i < regionNodes.length; i++) {
                 const node = regionNodes[i];
                 
-                // Find 2 random micro particles to connect to in a zigzag
-                const m1 = regionMicros[Math.floor(Math.random() * regionMicros.length)];
-                const m2 = regionMicros[Math.floor(Math.random() * regionMicros.length)];
+                const m1 = regionMicros[Math.floor(seededRandom() * regionMicros.length)];
+                const m2 = regionMicros[Math.floor(seededRandom() * regionMicros.length)];
                 
-                // Node -> M1
+                // Node -> M1 (Fading toward M1)
                 linePos.push(node.x, node.y, node.z, m1.x, m1.y, m1.z);
-                lineColors.push(c.r, c.g, c.b, c.r, c.g, c.b);
+                lineColors.push(c.r, c.g, c.b, c.r * 0.3, c.g * 0.3, c.b * 0.3);
                 
-                // M1 -> M2 (Zigzag extension)
+                // M1 -> M2 (Fading toward M2)
                 linePos.push(m1.x, m1.y, m1.z, m2.x, m2.y, m2.z);
-                lineColors.push(c.r, c.g, c.b, c.r, c.g, c.b);
+                lineColors.push(c.r * 0.3, c.g * 0.3, c.b * 0.3, c.r * 0.1, c.g * 0.1, c.b * 0.1);
                 
-                // Occasionally connect Node to Node for core structure
-                if (i < regionNodes.length - 1 && Math.random() > 0.5) {
+                if (i < regionNodes.length - 1 && seededRandom() > 0.5) {
                     const nextNode = regionNodes[i+1];
+                    // Node -> NextNode (Stable core lines, slight fade)
                     linePos.push(node.x, node.y, node.z, nextNode.x, nextNode.y, nextNode.z);
-                    lineColors.push(c.r, c.g, c.b, c.r, c.g, c.b);
+                    lineColors.push(c.r, c.g, c.b, c.r * 0.6, c.g * 0.6, c.b * 0.6);
                 }
             }
         });

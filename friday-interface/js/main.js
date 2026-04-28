@@ -17,17 +17,18 @@ const startExperience = () => {
     const scene = initScene();
     const camera = initCamera();
     const renderer = initRenderer();
+    const container = document.getElementById('experience');
 
-    // Controls: Zoom + Rotation
-    const controls = new OrbitControls(camera, renderer.domElement);
+    // Controls: Locked for extreme stability
+    const controls = new OrbitControls(camera, container || renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
-    controls.autoRotate = true;
-    controls.autoRotateSpeed = 1.0;
-    controls.enableZoom = true;
-    controls.minDistance = 2.5; // Closer "regional" zoom
-    controls.maxDistance = 60.0; // Expanded zoom out range for macro view
-
+    controls.autoRotate = false; // Disabled for deterministic framing
+    controls.enableZoom = false; // Disable dynamic zoom as requested
+    controls.minDistance = 30.0; // Locked to new camera distance for 40-55% framing
+    controls.maxDistance = 30.0; 
+    controls.enablePan = false; 
+    controls.rotateSpeed = 0.3; // Allow slow user rotation if they desire, but no random movement
     const brainCore = new BrainCore(scene);
     const particles = new ParticleSystem(scene);
     const connections = new ConnectionSystem(scene, particles, brainCore);
@@ -55,20 +56,11 @@ const startExperience = () => {
             // Update Controls
             controls.update();
 
-        // Regional Zoom Effect: Scale labels based on camera distance
-        const dist = camera.position.length();
-        let scale = 1.0;
-        if (!isNaN(dist) && dist > 0) {
-            scale = Math.max(0.4, Math.min(1.2, 1.5 - (dist / 12)));
-        }
-        const overlay = document.querySelector('.ui-overlay');
-        if (overlay) overlay.style.fontSize = `${scale * 100}%`;
-
         // Scene Components Update
         brainCore.update(time);
         particles.update(time);
         connections.update(time, delta);
-        labels.update(time);
+        labels.update(time, camera.position.length());
 
         renderer.render(scene, camera);
         } catch (e) {
@@ -77,7 +69,19 @@ const startExperience = () => {
     };
 
     console.log("FRIDAY_INTERFACE_INITIALIZED");
+
+    // Add a system notification on boot to confirm everything is loaded
+    setTimeout(() => {
+        const event = new CustomEvent('neural-voice-response', { 
+            detail: { text: "Neural link established. All systems nominal, sir." } 
+        });
+        window.dispatchEvent(event);
+    }, 1200);
+
     animate();
+
+    // OrbitControls handles zoom naturally. 
+    // We removed the manual wheel override to prevent conflicts and layout jumping.
 
     window.addEventListener('resize', () => {
         camera.aspect = window.innerWidth / window.innerHeight;

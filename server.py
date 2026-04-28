@@ -1,4 +1,4 @@
-﻿"""
+"""
 FastAPI + WebSocket Server for NeuroLinked Brain
 
 Serves the 3D dashboard and streams real-time brain state via WebSocket.
@@ -152,6 +152,26 @@ def init_brain():
     video_recorder = VideoRecorder(fps=10, segment_minutes=10)
 
     # --- BRIDGE: Audio Capture -> Voice Pipeline ---
+    global _voice_audio_queue, _voice_audio_thread
+    import queue
+    _voice_audio_queue = queue.Queue()
+    
+    def _voice_audio_worker():
+        print("[VOICE] Background audio worker started")
+        while True:
+            try:
+                # Use a short timeout so we can check for thread stop if needed
+                pcm16 = _voice_audio_queue.get(timeout=0.5)
+                if voice_pipeline and voice_pipeline.state != PipelineState.IDLE:
+                    voice_pipeline.feed_audio(pcm16)
+            except queue.Empty:
+                continue
+            except Exception as e:
+                print(f"[VOICE] Worker error: {e}")
+
+    _voice_audio_thread = threading.Thread(target=_voice_audio_worker, daemon=True)
+    _voice_audio_thread.start()
+
     _original_audio_callback = audio_encoder._audio_callback
     
     _audio_frame_counter = 0
@@ -160,15 +180,18 @@ def init_brain():
         # 1. Standard spectral encoding (for brain spikes)
         _original_audio_callback(indata, frames, time_info, status)
         
-        # 2. Feed to Voice Pipeline (for STT/TTS)
+        # 2. Feed to Voice Pipeline (via Queue to avoid blocking audio thread)
         if voice_pipeline and voice_pipeline.state != PipelineState.IDLE:
-            # Debug: Print every 100 frames (~1.6 seconds) to avoid spam
-            _audio_frame_counter += 1
-            if _audio_frame_counter % 100 == 0:
-                print(f"[DEBUG] Feeding audio to pipeline. Max amplitude: {np.max(np.abs(indata)):.4f}")
-
             pcm16 = (indata[:, 0] * 32767).astype(np.int16).tobytes()
-            voice_pipeline.feed_audio(pcm16)
+            try:
+                _voice_audio_queue.put_nowait(pcm16)
+            except queue.Full:
+                pass
+            
+            # Debug: Print every 300 frames (~5 seconds)
+            _audio_frame_counter += 1
+            if _audio_frame_counter % 300 == 0:
+                print(f"[DEBUG] Audio queue size: {_voice_audio_queue.qsize()} | Max amp: {np.max(np.abs(indata)):.4f}")
     
     # Override the default callback with our bridged one
     audio_encoder._audio_callback = _bridged_audio_callback
@@ -751,14 +774,18 @@ async def assistant_chat(data: dict):
                 if m.get("text", "").lower().strip() != text.lower().strip()
             ]
 
-        # 3. Neural insights (surprise / novelty signals)
-        insights = claude_bridge.get_insights() if claude_bridge else {}
+        # 3. Neural insights for user input (Mental state after hearing user)
+        user_insights = claude_bridge.get_insights() if claude_bridge else []
 
         # 4. Generate intelligent response via NVIDIA DeepSeek API
         reply = ask_llm(text, memories)
 
-        # 5. Store the interaction AFTER responding â€” now this Q&A pair is
-        #    available for future recalls without corrupting the current one.
+        # 5. Process the response through the brain as well (Self-monitoring)
+        reply_features = text_encoder.encode(reply)
+        brain.inject_sensory_input("text", reply_features)
+        assistant_insights = claude_bridge.get_insights() if claude_bridge else []
+
+        # 6. Store the interaction AFTER responding
         if claude_bridge:
             claude_bridge.send_observation({
                 "type": "text",
@@ -775,7 +802,8 @@ async def assistant_chat(data: dict):
             "ok": True,
             "response": reply,
             "memories": memories,
-            "insights": insights,
+            "user_insights": user_insights,
+            "assistant_insights": assistant_insights,
             "brain_state": {
                 "stage": brain.development_stage,
                 "active_regions": [
@@ -1467,10 +1495,21 @@ def _ensure_voice_pipeline():
         def _play_audio_callback(wav_bytes: bytes, sample_rate: int):
             """Play synthesized audio via sounddevice."""
             try:
-                # Simple direct playback for PCM16 WAV
-                # Remove WAV header (44 bytes) to get raw samples
-                raw_data = np.frombuffer(wav_bytes[44:], dtype=np.int16)
-                sd.play(raw_data, sample_rate)
+                import io
+                import wave
+                with wave.open(io.BytesIO(wav_bytes), "rb") as w:
+                    # Robust extraction of raw samples regardless of header size
+                    sr = w.getframerate()
+                    frames = w.readframes(w.getnframes())
+                    # Use .copy() to ensure the buffer is owned by the numpy array
+                    # and won't be GC'd while sounddevice is playing it in the background
+                    raw_data = np.frombuffer(frames, dtype=np.int16).copy()
+                    
+                    if len(raw_data) > 0:
+                        print(f"[VOICE] Playing {len(raw_data)} samples at {sr}Hz")
+                        sd.play(raw_data, sr)
+                    else:
+                        print("[VOICE] Warning: Synthesized audio is empty")
             except Exception as e:
                 print(f"[VOICE] Audio playback error: {e}")
 

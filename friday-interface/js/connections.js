@@ -28,7 +28,7 @@ export class ConnectionSystem {
       const endDir = start.clone().normalize().negate();
       const end = endDir.multiplyScalar(1.5);
 
-      // Curved intermediate points
+      // Curved intermediate points - deterministic
       const mid1 = new THREE.Vector3(
         start.x * 0.7 + randomRange(-3, 3),
         start.y * 0.7 + randomRange(-3, 3),
@@ -70,12 +70,12 @@ export class ConnectionSystem {
     this.packetMesh = new THREE.InstancedMesh(packetGeo, packetMat, this.packetCount);
     this.scene.add(this.packetMesh);
 
-    // Initialize packet data (Exactly 1 packet per curve)
+    // Initialize packet data (Exactly 1 packet per curve) - deterministic
     for (let i = 0; i < this.packetCount; i++) {
       this.dataPackets.push({
         curveIndex: i, // 1:1 mapping to curve
         instanceIdx: i,
-        progress: Math.random(),
+        progress: seededRandom(),
         speed: randomRange(0.2, 0.5) // Faster travel
       });
     }
