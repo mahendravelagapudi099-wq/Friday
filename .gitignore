@@ -56,3 +56,5 @@ package-lock.json
 
 # MCP server files
 mcp_server.py
+.agents
+backup_unused_files
