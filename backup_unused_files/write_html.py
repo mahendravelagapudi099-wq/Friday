@@ -1,0 +1,113 @@
+html_content = """<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FRIDAY // NEURAL INTERFACE</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="experience"></div>
+    <div class="scanlines"></div>
+
+    <div class="ui-overlay">
+        <!-- Labels -->
+        <div class="label pink" style="top: 15%; left: 25%;">
+            <div class="label-title">PREFRONTAL</div>
+            <div class="label-stats">138 members . firing 8.98</div>
+        </div>
+        <div class="label orange" style="top: 15%; right: 25%;">
+            <div class="label-title">MOTOR CORTEX</div>
+            <div class="label-stats">116 members . firing 8.32</div>
+        </div>
+        <div class="label purple" style="top: 55%; left: 15%;">
+            <div class="label-title">VISUAL PROCESSING</div>
+            <div class="label-stats">142 members . firing 8.12</div>
+        </div>
+        <div class="label cyan" style="top: 45%; right: 15%;">
+            <div class="label-title">SENSORY CORTEX</div>
+            <div class="label-stats">192 members . firing 8.65</div>
+        </div>
+        <div class="label green" style="top: 85%; left: 30%;">
+            <div class="label-title">HIPPOCAMPUS</div>
+            <div class="label-stats">164 members . firing 8.48</div>
+        </div>
+        <div class="label red" style="top: 82%; right: 30%;">
+            <div class="label-title">AMYGDALA</div>
+            <div class="label-stats">147 members . firing 9.12</div>
+        </div>
+        <div class="label yellow" style="top: 70%; right: 40%;">
+            <div class="label-title">FEATURE LAYER</div>
+            <div class="label-stats">256 members . firing 8.48</div>
+        </div>
+        <div class="label blue" style="top: 25%; left: 45%;">
+            <div class="label-title">FRIDAY NET</div>
+            <div class="label-stats">1024 members . firing 9.45</div>
+        </div>
+        <div class="label-primary" style="top: 48%; left: 50%; transform: translate(-50%, -50%);">
+            <div class="label-title">CONCEPT SYNTHESIZATION</div>
+            <div class="label-stats">186 members . firing 9.26</div>
+        </div>
+
+        <!-- Cinematic Subtitles -->
+        <div class="chat-history" id="chat-history">
+            <div class="chat-message jarvis">
+                <span class="chat-role">NEURAL LINK</span>
+                <span class="chat-text">Connection established. Neural clusters at 100% capacity. Ready for protocol initiation, sir.</span>
+            </div>
+        </div>
+
+        <!-- Status bar -->
+        <div class="status-bar" id="status-bar">
+            <span class="status-dot"></span>
+            <span class="status-text" id="status-text">NEURAL LINK ONLINE</span>
+            <span class="status-sep">|</span>
+            <span class="status-info" id="status-info">READY</span>
+        </div>
+
+        <!-- Vision Webcam Feed -->
+        <div id="vision-container" class="vision-container hidden">
+            <video id="vision-video" autoplay playsinline muted></video>
+        </div>
+
+        <!-- Control Buttons (bottom center) -->
+        <div class="controls-bar">
+            <button id="mic-btn" class="control-btn" title="Toggle Microphone">
+                <span class="btn-icon">MIC</span>
+                <span class="btn-label">VOICE</span>
+            </button>
+            <button id="tts-btn" class="control-btn tts-on" title="Toggle Voice Output">
+                <span class="btn-icon">SPK</span>
+                <span class="btn-label">TTS ON</span>
+            </button>
+            <button id="vision-btn" class="control-btn" title="Toggle Vision">
+                <span class="btn-icon">EYE</span>
+                <span class="btn-label">VISION</span>
+            </button>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer-text">
+            LISTENING . PROCESSING . LEARNING
+        </div>
+    </div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+    <script type="module" src="js/main.js"></script>
+    <script type="module" src="js/chat.js"></script>
+</body>
+</html>"""
+
+with open("E:/NeuroLinked-V1.3-SOURCE/friday-interface/index.html", "w", encoding="utf-8") as f:
+    f.write(html_content)
+print("Written OK")

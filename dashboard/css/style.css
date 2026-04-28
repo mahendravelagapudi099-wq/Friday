@@ -1,0 +1,238 @@
+/* 
+ * NeuroLinked V1.3 Dashboard — Cyberpunk Neural Interface
+ * Premium Glassmorphism & High-Fidelity Glow System
+ */
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&display=swap');
+
+:root {
+    --bg-dark: #020408;
+    --panel-bg: rgba(8, 12, 20, 0.7);
+    --accent-cyan: #00eaff;
+    --accent-pink: #ff0055;
+    --accent-green: #00ff88;
+    --text-main: #e0e6ed;
+    --text-muted: rgba(224, 230, 237, 0.5);
+    --border-glow: rgba(0, 234, 255, 0.2);
+    --glass-blur: 16px;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--bg-dark);
+    color: var(--text-main);
+    font-family: 'JetBrains Mono', monospace;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+}
+
+#canvas-container {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+/* Glassmorphism Panels */
+.glass-panel {
+    background: var(--panel-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--border-glow);
+    border-radius: 12px;
+    padding: 18px;
+    position: absolute;
+    z-index: 10;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8),
+                inset 0 0 15px rgba(0, 234, 255, 0.05);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-panel:hover {
+    border-color: rgba(0, 234, 255, 0.5);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.9),
+                0 0 20px rgba(0, 234, 255, 0.1);
+}
+
+/* Panel Layouts */
+#stats-panel {
+    top: 24px;
+    left: 24px;
+    width: 280px;
+}
+
+#regions-panel {
+    top: 24px;
+    right: 24px;
+    width: 320px;
+    max-height: 60vh;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent-cyan) transparent;
+}
+
+#regions-panel::-webkit-scrollbar { width: 4px; }
+#regions-panel::-webkit-scrollbar-thumb { background: var(--accent-cyan); border-radius: 2px; }
+
+#claude-panel { bottom: 100px; right: 24px; width: 280px; }
+#safety-panel { bottom: 100px; left: 24px; width: 280px; }
+
+#input-panel {
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 800px;
+    max-width: 90vw;
+    display: flex;
+    gap: 12px;
+    padding: 12px 20px;
+    align-items: center;
+}
+
+/* Typography & Stats */
+.stats-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent-cyan);
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(0, 234, 255, 0.1);
+    padding-bottom: 8px;
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 12px;
+}
+
+.stat-label { color: var(--text-muted); }
+.stat-value { color: #fff; font-weight: 700; text-shadow: 0 0 8px rgba(255,255,255,0.2); }
+.stat-value.live { color: var(--accent-green); }
+
+/* Live Indicators */
+.live-indicator { display: flex; align-items: center; gap: 6px; font-size: 10px; }
+.live-dot {
+    width: 6px; height: 6px; background: var(--accent-green); border-radius: 50%;
+    box-shadow: 0 0 10px var(--accent-green);
+    animation: pulseGlow 1.5s infinite;
+}
+
+@keyframes pulseGlow {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.3); opacity: 0.6; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* Neuromodulator Bars */
+#neuro-bars { margin-top: 15px; }
+.neuro-bar-row { margin-bottom: 10px; }
+.neuro-bar-label { font-size: 10px; color: var(--text-muted); margin-bottom: 4px; display: block; }
+.neuro-bar-track { height: 6px; background: rgba(0,0,0,0.4); border-radius: 3px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); }
+.neuro-bar-fill { height: 100%; transition: width 0.5s ease-out; }
+.neuro-bar-fill.da { background: linear-gradient(90deg, #ff8800, #ffcc00); box-shadow: 0 0 10px rgba(255, 136, 0, 0.4); }
+.neuro-bar-fill.ach { background: linear-gradient(90deg, #00eaff, #0088ff); box-shadow: 0 0 10px rgba(0, 234, 255, 0.4); }
+.neuro-bar-fill.ne { background: linear-gradient(90deg, #ff0055, #ff3366); box-shadow: 0 0 10px rgba(255, 0, 85, 0.4); }
+.neuro-bar-fill.sht { background: linear-gradient(90deg, #aa00ff, #7700ff); box-shadow: 0 0 10px rgba(170, 0, 255, 0.4); }
+
+/* Controls */
+#text-input {
+    flex: 1;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #fff;
+    padding: 10px 18px;
+    border-radius: 6px;
+    outline: none;
+    font-family: inherit;
+    font-size: 14px;
+    transition: border-color 0.3s;
+}
+#text-input:focus { border-color: var(--accent-cyan); box-shadow: 0 0 15px rgba(0, 234, 255, 0.1); }
+
+.control-btn {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: var(--accent-cyan);
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.control-btn:hover { background: rgba(0,234,255,0.1); border-color: var(--accent-cyan); }
+.control-btn.active { background: rgba(255, 0, 85, 0.1); border-color: var(--accent-pink); color: var(--accent-pink); box-shadow: 0 0 15px rgba(255, 0, 85, 0.2); }
+
+/* Loading Screen */
+#loading {
+    position: fixed;
+    inset: 0;
+    background: var(--bg-dark);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.8s ease-in-out;
+}
+
+#loading.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.loading-title {
+    font-size: 48px;
+    font-weight: 900;
+    letter-spacing: 12px;
+    color: #fff;
+    text-shadow: 0 0 30px rgba(0, 234, 255, 0.5);
+    margin-bottom: 40px;
+    animation: titleFloat 3s infinite ease-in-out;
+}
+
+@keyframes titleFloat {
+    0%, 100% { transform: translateY(0); filter: drop-shadow(0 0 10px var(--accent-cyan)); }
+    50% { transform: translateY(-10px); filter: drop-shadow(0 0 30px var(--accent-cyan)); }
+}
+
+.loading-bar { width: 400px; height: 2px; background: rgba(255,255,255,0.1); border-radius: 1px; margin: 20px 0; overflow: hidden; }
+.loading-fill { height: 100%; background: var(--accent-cyan); width: 0; transition: width 0.4s ease-out; box-shadow: 0 0 15px var(--accent-cyan); }
+.loading-status { font-size: 10px; color: var(--accent-cyan); letter-spacing: 4px; text-transform: uppercase; }
+
+/* Region List */
+.region-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; cursor: pointer; padding: 4px; border-radius: 4px; transition: background 0.2s; }
+.region-row:hover { background: rgba(255,255,255,0.03); }
+.region-name { font-size: 11px; flex: 1; color: var(--text-main); }
+.region-bar-track { flex: 2; height: 4px; background: rgba(0,0,0,0.4); border-radius: 2px; overflow: hidden; }
+.region-bar-fill { height: 100%; border-radius: 2px; transition: width 0.3s; }
+.region-rate { font-size: 10px; width: 40px; text-align: right; color: var(--accent-green); font-weight: 700; }
+
+/* Region Info Popup */
+#region-info {
+    bottom: 150px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    width: 400px;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+#region-info.visible { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+.info-title { font-size: 16px; font-weight: 900; margin-bottom: 10px; letter-spacing: 2px; }
+.info-body { font-size: 12px; line-height: 1.6; color: var(--text-muted); }
+
+/* Helpers */
+.hidden { display: none !important; }
